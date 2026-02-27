@@ -77,12 +77,38 @@
                 context.scale(-1, 1);
                 
                 // Ajuste de posición: i * 310 para dejar espacio entre fotos
-                context.drawImage(video, 20, 30 + (i * 285), 360, 270);
-                context.restore();
+                // --- NUEVO CÓDIGO PARA EVITAR FOTOS ALARGADAS ---
+const videoWidth = video.videoWidth;
+const videoHeight = video.videoHeight;
+const targetWidth = 360;
+const targetHeight = 270;
 
-                await new Promise(r => setTimeout(r, 500));
-                document.getElementById('booth').classList.remove('flash');
-                countdownEl.style.display = 'none';
+// Calculamos la proporción para recortar el centro
+const videoAspect = videoWidth / videoHeight;
+const targetAspect = targetWidth / targetHeight;
+
+let sourceX = 0, sourceY = 0, sourceWidth = videoWidth, sourceHeight = videoHeight;
+
+if (videoAspect > targetAspect) {
+    sourceWidth = videoHeight * targetAspect;
+    sourceX = (videoWidth - sourceWidth) / 2;
+} else {
+    sourceHeight = videoWidth / targetAspect;
+    sourceY = (videoHeight - sourceHeight) / 2;
+}
+
+context.save();
+context.translate(canvas.width, 0);
+context.scale(-1, 1);
+
+// Dibujamos solo el centro de la imagen capturada para que no se estire
+context.drawImage(
+    video, 
+    sourceX, sourceY, sourceWidth, sourceHeight, // Qué parte del video tomamos
+    20, 50 + (i * 290), targetWidth, targetHeight // Dónde lo ponemos en la tira
+);
+context.restore();
+// ----------------------------------------------
             }
 
             // DIBUJAR TU MARCO AL FINAL
@@ -112,4 +138,5 @@
 </body>
 
 </html>
+
 
