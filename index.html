@@ -44,7 +44,7 @@
         // 1. Cargar el diseño con precaución de seguridad
         const marco = new Image();
         marco.crossOrigin = "anonymous"; 
-        marco.src = 'diseno.png'; // <--- USA EL NOMBRE EXACTO DE TU ARCHIVO PNG
+        marco.src = 'https://i.postimg.cc/BQ1FSZqN/Happy-Birthday-(1).png'; // <--- USA EL NOMBRE EXACTO DE TU ARCHIVO PNG
 
         navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } })
             .then(stream => { video.srcObject = stream; })
@@ -110,4 +110,5 @@
         snapBtn.addEventListener('click', takePhotos);
     </script>
 </body>
+
 </html>
