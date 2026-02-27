@@ -6,9 +6,9 @@
     <title>Photobooth</title>
     <style>
         body { background-color: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .booth-container { position: relative; border: 8px solid #333; border-radius: 20px; overflow: hidden; background: #000; width: 420px; }
-        #video { width: 100%; transform: scaleX(-1); display: block; }
-        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 10; }
+        .booth-container { position: relative; border: 6px solid #333; border-radius: 15px; overflow: hidden; background: #000; width: 90%; max-width: 400px; margin: 0 auto; }
+        #video { width: 100%; height: auto; display: block; transform: scaleX(-1); }
+        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 10; }
         #snap { margin: 20px; padding: 15px 40px; font-size: 20px; border-radius: 50px; background: #ff4757; color: white; border: none; cursor: pointer; font-weight: bold; }
         #photo-strip { background: white; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 300px; display: none; border: 1px solid #ddd; }
         #download-link { margin-top: 15px; color: #2ed573; font-weight: bold; text-decoration: none; display: none; }
@@ -46,9 +46,13 @@
         marco.crossOrigin = "anonymous"; 
         marco.src = 'https://i.postimg.cc/BQ1FSZqN/Happy-Birthday-(1).png'; // <--- USA EL NOMBRE EXACTO DE TU ARCHIVO PNG
 
-        navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => alert("Por favor, permite el acceso a la cámara."));
+        navigator.mediaDevices.getUserMedia({ 
+    video: { 
+        width: { ideal: 640 }, 
+        height: { ideal: 480 },
+        facingMode: "user" 
+    } 
+})
 
         async function takePhotos() {
             snapBtn.disabled = true;
@@ -138,5 +142,6 @@ context.restore();
 </body>
 
 </html>
+
 
 
