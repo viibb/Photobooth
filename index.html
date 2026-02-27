@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobooth</title>
+    <style>
+        body { background-color: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .booth-container { position: relative; border: 8px solid #333; border-radius: 20px; overflow: hidden; background: #000; width: 420px; }
+        #video { width: 100%; transform: scaleX(-1); display: block; }
+        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 10; }
+        #snap { margin: 20px; padding: 15px 40px; font-size: 20px; border-radius: 50px; background: #ff4757; color: white; border: none; cursor: pointer; font-weight: bold; }
+        #photo-strip { background: white; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 300px; display: none; border: 1px solid #ddd; }
+        #download-link { margin-top: 15px; color: #2ed573; font-weight: bold; text-decoration: none; display: none; }
+        .flash { animation: flashAnim 0.2s; }
+        @keyframes flashAnim { 0% { opacity: 0.5; background: white; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <h1 style="color: #ff4757;">Photobooth</h1>
+    
+    <div class="booth-container" id="booth">
+        <div id="countdown" style="display:none;">6</div>
+        <video id="video" autoplay playsinline></video>
+    </div>
+
+    <button id="snap">¡EMPEZAR (8 seg entre fotos)!</button>
+
+    <canvas id="canvas" width="400" height="1350" style="display:none;"></canvas>
+    
+    <img id="photo-strip">
+    <a id="download-link" download="nuestra_foto.png">📥 DESCARGAR TIRA</a>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        const stripImg = document.getElementById('photo-strip');
+        const downloadBtn = document.getElementById('download-link');
+        const countdownEl = document.getElementById('countdown');
+        const snapBtn = document.getElementById('snap');
+
+        // 1. Cargar el diseño con precaución de seguridad
+        const marco = new Image();
+        marco.crossOrigin = "anonymous"; 
+        marco.src = 'diseno.png'; // <--- USA EL NOMBRE EXACTO DE TU ARCHIVO PNG
+
+        navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => alert("Por favor, permite el acceso a la cámara."));
+
+        async function takePhotos() {
+            snapBtn.disabled = true;
+            stripImg.style.display = 'none';
+            downloadBtn.style.display = 'none';
+
+            // Limpiar canvas y poner fondo blanco
+            context.fillStyle = "white";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < 4; i++) {
+                // Cuenta regresiva
+                for (let count = 6; count > 0; count--) {
+                    countdownEl.innerText = count;
+                    countdownEl.style.display = 'block';
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+
+                // Efecto Flash
+                document.getElementById('booth').classList.add('flash');
+                countdownEl.innerText = "📸";
+                
+                // CAPTURA: Dibujamos el video en el canvas
+                context.save();
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+                
+                // Ajuste de posición: i * 310 para dejar espacio entre fotos
+                context.drawImage(video, 20, 30 + (i * 285), 360, 270);
+                context.restore();
+
+                await new Promise(r => setTimeout(r, 500));
+                document.getElementById('booth').classList.remove('flash');
+                countdownEl.style.display = 'none';
+            }
+
+            // DIBUJAR TU MARCO AL FINAL
+            if (marco.complete) {
+                context.drawImage(marco, 0, 0, 400, 1350);
+            } else {
+                marco.onload = () => context.drawImage(marco, 0, 0, 400, 1350);
+            }
+
+            // FORZAR RENDERIZADO
+            setTimeout(() => {
+                const dataURL = canvas.toDataURL('image/png');
+                if(dataURL.length > 100) { // Verificar que no esté vacío
+                    stripImg.src = dataURL;
+                    stripImg.style.display = 'block';
+                    downloadBtn.href = dataURL;
+                    downloadBtn.style.display = 'block';
+                } else {
+                    alert("Error al generar la imagen. Intenta abrirlo con un servidor local.");
+                }
+                snapBtn.disabled = false;
+            }, 500);
+        }
+
+        snapBtn.addEventListener('click', takePhotos);
+    </script>
+</body>
+</html>
