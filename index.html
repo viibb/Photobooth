@@ -3,168 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photobooth</title>
+    <title>Photobooth Fiesta 📸</title>
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .booth-container { position: relative;
-    border: 6px solid #333;
-    border-radius: 20px;
-    background: #000;
-    /* Esto controla qué tan grande se ve en la pantalla del celular */
-    width: 320px; 
-    height: 240px;
-    margin: 0 auto;
-    overflow: hidden; }
-        #video { width: 100%;
-    height: 100%;
-    object-fit: cover; /* Esto hace que el video llene el cuadro sin deformarse */
-    transform: scaleX(-1); }
-        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 10; }
-        #snap { margin: 20px; padding: 15px 40px; font-size: 20px; border-radius: 50px; background: #ff4757; color: white; border: none; cursor: pointer; font-weight: bold; }
-        #photo-strip { background: white; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 300px; display: none; border: 1px solid #ddd; }
-        #download-link { margin-top: 15px; color: #2ed573; font-weight: bold; text-decoration: none; display: none; }
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin: 0;
+        }
+
+        h1 { font-size: 1.5rem; color: #ff4757; text-align: center; }
+
+        .booth-container {
+            position: relative;
+            border: 6px solid #333;
+            border-radius: 20px;
+            background: #000;
+            /* Tamaño controlado para celular */
+            width: 320px; 
+            height: 240px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(0,0,0,0.8);
+            z-index: 10;
+            display: none;
+        }
+
+        #snap {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        #snap:disabled { background: #555; }
+
+        #photo-strip {
+            margin-top: 20px;
+            width: 280px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #download-link {
+            margin: 15px 0;
+            color: #2ed573;
+            font-weight: bold;
+            text-decoration: none;
+            display: none;
+        }
+
         .flash { animation: flashAnim 0.2s; }
-        @keyframes flashAnim { 0% { opacity: 0.5; background: white; } 100% { opacity: 1; } }
+        @keyframes flashAnim { 0% { background: white; } 100% { background: #1a1a1a; } }
     </style>
 </head>
 <body>
 
-    <h1 style="color: #ff4757;">Photobooth</h1>
+    <h1>Photobooth</h1>
     
     <div class="booth-container" id="booth">
-        <div id="countdown" style="display:none;">6</div>
-        <video id="video" autoplay playsinline></video>
+        <div id="countdown">6</div>
+        <video id="video" autoplay playsinline muted></video>
     </div>
 
-    <button id="snap">¡EMPEZAR (6 seg entre fotos)!</button>
+    <button id="snap">¡INICIAR (6s)!</button>
 
     <canvas id="canvas" width="400" height="1350" style="display:none;"></canvas>
-    
     <img id="photo-strip">
-    <a id="download-link" download="foto.png">📥 DESCARGAR TIRA</a>
+    <a id="download-link" download="nuestra_foto.png">📥 DESCARGAR TIRA</a>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d', { willReadFrequently: true });
+        const context = canvas.getContext('2d');
         const stripImg = document.getElementById('photo-strip');
         const downloadBtn = document.getElementById('download-link');
         const countdownEl = document.getElementById('countdown');
         const snapBtn = document.getElementById('snap');
 
-        // 1. Cargar el diseño con precaución de seguridad
+        // IMPORTANTE: Pon aquí el link de tu diseño que subiste a internet
         const marco = new Image();
-        marco.crossOrigin = "anonymous"; 
-        marco.src = 'https://i.postimg.cc/BQ1FSZqN/Happy-Birthday-(1).png'; // <--- USA EL NOMBRE EXACTO DE TU ARCHIVO PNG
+        marco.crossOrigin = "anonymous";
+        marco.src = 'https://i.postimg.cc/BQ1FSZqN/Happy-Birthday-(1).png'; // <-- CAMBIA ESTO POR TU LINK REAL
 
-        navigator.mediaDevices.getUserMedia({ 
-    video: { 
-        width: { ideal: 1280 }, 
-        height: { ideal: 720 },
-        facingMode: "user" 
-    } 
-})
-.then(stream => { 
-    video.srcObject = stream;
-    // Forzamos el play por si el navegador lo pausó
-    video.play();
-})
-.catch(err => {
-    // Si falla lo anterior, intentamos una configuración básica
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => { video.srcObject = stream; });
-});
-})
+        // Iniciar cámara de forma segura
+        function iniciarCamara() {
+            navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
+            })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error("Error cámara:", err);
+                alert("Asegúrate de dar permisos a la cámara y usar HTTPS");
+            });
+        }
+
+        iniciarCamara();
 
         async function takePhotos() {
             snapBtn.disabled = true;
             stripImg.style.display = 'none';
             downloadBtn.style.display = 'none';
 
-            // Limpiar canvas y poner fondo blanco
+            // Limpiar canvas
             context.fillStyle = "white";
             context.fillRect(0, 0, canvas.width, canvas.height);
 
             for (let i = 0; i < 4; i++) {
-                // Cuenta regresiva
-                for (let count = 6; count > 0; count--) {
+                for (let count = 8; count > 0; count--) {
                     countdownEl.innerText = count;
                     countdownEl.style.display = 'block';
                     await new Promise(r => setTimeout(r, 1000));
                 }
 
-                // Efecto Flash
-                document.getElementById('booth').classList.add('flash');
+                document.body.classList.add('flash');
                 countdownEl.innerText = "📸";
-                
-                // CAPTURA: Dibujamos el video en el canvas
+
+                // Captura con ajuste de proporción (Object Fit Cover)
+                const vW = video.videoWidth;
+                const vH = video.videoHeight;
+                const targetW = 360;
+                const targetH = 270;
+                const vAspect = vW / vH;
+                const tAspect = targetW / targetH;
+                let sX = 0, sY = 0, sW = vW, sH = vH;
+
+                if (vAspect > tAspect) { sW = vH * tAspect; sX = (vW - sW) / 2; } 
+                else { sH = vW / tAspect; sY = (vH - sH) / 2; }
+
                 context.save();
                 context.translate(canvas.width, 0);
                 context.scale(-1, 1);
-                
-                // Ajuste de posición: i * 310 para dejar espacio entre fotos
-                // --- NUEVO CÓDIGO PARA EVITAR FOTOS ALARGADAS ---
-const videoWidth = video.videoWidth;
-const videoHeight = video.videoHeight;
-const targetWidth = 360;
-const targetHeight = 270;
+                context.drawImage(video, sX, sY, sW, sH, 20, 45 + (i * 295), targetW, targetH);
+                context.restore();
 
-// Calculamos la proporción para recortar el centro
-const videoAspect = videoWidth / videoHeight;
-const targetAspect = targetWidth / targetHeight;
-
-let sourceX = 0, sourceY = 0, sourceWidth = videoWidth, sourceHeight = videoHeight;
-
-if (videoAspect > targetAspect) {
-    sourceWidth = videoHeight * targetAspect;
-    sourceX = (videoWidth - sourceWidth) / 2;
-} else {
-    sourceHeight = videoWidth / targetAspect;
-    sourceY = (videoHeight - sourceHeight) / 2;
-}
-
-context.save();
-context.translate(canvas.width, 0);
-context.scale(-1, 1);
-
-// Dibujamos solo el centro de la imagen capturada para que no se estire
-context.drawImage(
-    video, 
-    sourceX, sourceY, sourceWidth, sourceHeight, // Qué parte del video tomamos
-    20, 50 + (i * 290), targetWidth, targetHeight // Dónde lo ponemos en la tira
-);
-context.restore();
-// ----------------------------------------------
+                await new Promise(r => setTimeout(r, 500));
+                document.body.classList.remove('flash');
+                countdownEl.style.display = 'none';
             }
 
-            // DIBUJAR TU MARCO AL FINAL
+            // Dibujar marco
             if (marco.complete) {
                 context.drawImage(marco, 0, 0, 400, 1350);
             } else {
-                marco.onload = () => context.drawImage(marco, 0, 0, 400, 1350);
+                await new Promise(r => { marco.onload = r; });
+                context.drawImage(marco, 0, 0, 400, 1350);
             }
 
-            // FORZAR RENDERIZADO
-            setTimeout(() => {
-                const dataURL = canvas.toDataURL('image/png');
-                if(dataURL.length > 100) { // Verificar que no esté vacío
-                    stripImg.src = dataURL;
-                    stripImg.style.display = 'block';
-                    downloadBtn.href = dataURL;
-                    downloadBtn.style.display = 'block';
-                } else {
-                    alert("Error al generar la imagen. Intenta abrirlo con un servidor local.");
-                }
-                snapBtn.disabled = false;
-            }, 500);
+            const dataURL = canvas.toDataURL('image/png');
+            stripImg.src = dataURL;
+            stripImg.style.display = 'block';
+            downloadBtn.href = dataURL;
+            downloadBtn.style.display = 'block';
+            
+            snapBtn.disabled = false;
+            stripImg.scrollIntoView({ behavior: 'smooth' });
         }
 
         snapBtn.addEventListener('click', takePhotos);
     </script>
 </body>
-
 </html>
-
-
-
-
