@@ -87,11 +87,11 @@
     <h1>Photobooth</h1>
     
     <div class="booth-container" id="booth">
-        <div id="countdown">6</div>
+        <div id="countdown">5</div>
         <video id="video" autoplay playsinline muted></video>
     </div>
 
-    <button id="snap">¡INICIAR (6s)!</button>
+    <button id="snap">¡INICIAR (5s)!</button>
 
     <canvas id="canvas" width="400" height="1350" style="display:none;"></canvas>
     <img id="photo-strip">
@@ -109,7 +109,7 @@
         // IMPORTANTE: Pon aquí el link de tu diseño que subiste a internet
         const marco = new Image();
         marco.crossOrigin = "anonymous";
-        marco.src = 'https://i.postimg.cc/BQ1FSZqN/Happy-Birthday-(1).png'; // <-- CAMBIA ESTO POR TU LINK REAL
+        marco.src = 'https://i.postimg.cc/VLJSDb7J/Happy-Birthday-Photoroom.png'; // <-- CAMBIA ESTO POR TU LINK REAL
 
         // Iniciar cámara de forma segura
         function iniciarCamara() {
